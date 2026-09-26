@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Jetpack CRM REST API Improved
- * Plugin URI: https://github.com/ivannikitin-com/jetpack-crm-rest-api-improved
+ * Plugin URI: https://github.com/ivannin/jetpack-crm-rest-api-improved
  * Description: Полнофункциональный стандартный WordPress REST API для всех сущностей Jetpack CRM.
  * Version: 0.8.0
  * Author: Иван Никитин

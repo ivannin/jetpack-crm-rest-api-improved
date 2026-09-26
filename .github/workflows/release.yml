@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build plugin ZIP
+        run: |
+          set -euo pipefail
+          SLUG="jetpack-crm-rest-api-improved"
+          git archive \
+            --format=zip \
+            --prefix="${SLUG}/" \
+            -o "${SLUG}.zip" \
+            "${GITHUB_REF_NAME}"
+          echo "Created ${SLUG}.zip"
+          unzip -l "${SLUG}.zip"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: jetpack-crm-rest-api-improved.zip
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

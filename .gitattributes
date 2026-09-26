@@ -6,6 +6,16 @@
 *.bat text eol=crlf
 *.cmd text eol=crlf
 
+# Exclude development-only files from `git archive` (release ZIP)
+/.github export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/composer.json export-ignore
+/composer.lock export-ignore
+/tests export-ignore
+/vendor export-ignore
+/node_modules export-ignore
+
 # Binary assets
 *.png binary
 *.jpg binary

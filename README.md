@@ -99,27 +99,36 @@ simply not registered.
 
 ## Installation
 
-### From GitHub (recommended)
+### From the latest release (recommended)
 
-1. Download the repository as a ZIP archive and unpack it, or clone it:
+Download the packaged plugin ZIP from the latest GitHub release:
 
-   ```bash
-   git clone https://github.com/ivannikitin-com/jetpack-crm-rest-api-improved.git
-   ```
+**<https://github.com/ivannin/jetpack-crm-rest-api-improved/releases>**
 
-2. Copy the `jetpack-crm-rest-api-improved` folder into
-   `wp-content/plugins/`.
+1. Open the releases page and download the latest
+   `jetpack-crm-rest-api-improved.zip` asset.
+2. In WordPress, go to **Plugins → Add New → Upload Plugin**, choose the ZIP file,
+   then click **Install Now** and **Activate**.
+3. Make sure **Jetpack CRM** is installed and active.
 
-3. Activate **Jetpack CRM REST API Improved** in **Plugins → Installed Plugins**.
-   Make sure **Jetpack CRM** is installed and active.
+Alternatively, unzip the archive and upload the `jetpack-crm-rest-api-improved`
+folder to `wp-content/plugins/` (for example via SFTP).
+
+### From source (development)
+
+Clone the repository and, optionally, install the Composer development tools:
+
+```bash
+git clone https://github.com/ivannin/jetpack-crm-rest-api-improved.git
+```
 
 The plugin ships with a PSR-4 fallback autoloader, so it works without running
-Composer. If you want the optimized Composer autoloader or the development tools,
-run:
+Composer. To use the optimized Composer autoloader or the development tools
+(PHPUnit, PHPCS, WPCS), run inside the plugin folder:
 
 ```bash
 composer install --no-dev    # production
-composer install             # development (PHPUnit, PHPCS, WPCS)
+composer install             # development
 ```
 
 ### Via Composer
@@ -130,8 +139,10 @@ composer require ivannikitin/jetpack-crm-rest-api-improved
 
 ### Updating
 
-Replace the plugin folder with the new version and keep your existing settings.
-Plugin options are stored as WordPress options and are preserved across updates.
+Download the newest release ZIP from
+<https://github.com/ivannin/jetpack-crm-rest-api-improved/releases> and replace
+the plugin, or update it from the WordPress plugin screen. Your settings are
+preserved: they are stored as WordPress options and kept across updates.
 
 ---
 
