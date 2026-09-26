@@ -2,7 +2,7 @@
     "name": "ivannikitin/jetpack-crm-rest-api-improved",
     "description": "Полнофункциональный стандартный WordPress REST API для Jetpack CRM",
     "type": "wordpress-plugin",
-    "license": "GPL-2.0-or-later",
+    "license": "MIT",
     "require": {
         "php": ">=7.4"
     },

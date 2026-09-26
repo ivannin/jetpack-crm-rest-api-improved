@@ -12,7 +12,7 @@ OpenAPI documentation and an MCP endpoint.
 - **REST namespace:** `jpcrm-improved/v1`
 - **Base URL:** `https://<your-site>/wp-json/jpcrm-improved/v1`
 - **MCP endpoint:** `https://<your-site>/wp-json/jpcrm-improved/v1/mcp`
-- **License:** GPL-2.0-or-later
+- **License:** MIT
 
 ---
 
@@ -465,5 +465,5 @@ The living, machine-readable specification is always available at
 
 ## License
 
-This plugin is licensed under the **GNU General Public License v2.0 or later**
-(GPL-2.0-or-later). See <https://www.gnu.org/licenses/gpl-2.0.html>.
+This plugin is released under the **MIT License**. See the [`LICENSE`](LICENSE)
+file for the full text.

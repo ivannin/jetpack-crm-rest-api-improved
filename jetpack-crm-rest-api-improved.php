@@ -6,7 +6,8 @@
  * Version: 0.8.0
  * Author: Иван Никитин
  * Author URI: https://ivannikitin.com
- * License: GPL2
+ * License: MIT
+ * License URI: https://opensource.org/licenses/MIT
  * Requires Plugins: zero-bs-crm
  * Text Domain: jetpack-crm-rest-api-improved
  * Domain Path: /languages
