@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# Jetpack CRM REST API Improved
+# ---------------------------------------------------------------------------
+
+# Dependencies (rebuilt with `composer install` / `npm install`)
+/vendor/
+/node_modules/
+
+# Composer lock file (this is a plugin, not a deployable application)
+composer.lock
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Operating system
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+/build/
+/dist/
+*.zip
+
+# Logs and caches
+*.log
+*.cache
+.phpunit.result.cache
+.phpunit.cache/
+/coverage/
+
+# Local test configuration and artifacts
+/phpunit.xml
