@@ -578,18 +578,28 @@ class MailAdapter {
 	public static function format_email( $email ) {
 		$email = (array) $email;
 
+		$status    = isset( $email['zbsmail_status'] ) ? (string) $email['zbsmail_status'] : '';
+		$sent_flag = isset( $email['zbsmail_sent'] ) ? (int) $email['zbsmail_sent'] : 0;
+		$created   = isset( $email['zbsmail_created'] ) ? (int) $email['zbsmail_created'] : 0;
+
+		// The CRM stores `zbsmail_sent` as a flag (-1 = logged, 1 = sent), not a
+		// timestamp, so it must never leak into the API as a date. Expose it as a
+		// boolean `sent` and use the history creation time for `date_sent`.
+		$is_sent = ( $sent_flag > 0 || 'sent' === $status );
+
 		return array(
 			'id'                 => isset( $email['ID'] ) ? (int) $email['ID'] : 0,
 			'thread_id'          => isset( $email['zbsmail_sender_thread'] ) ? (int) $email['zbsmail_sender_thread'] : 0,
 			'contact_id'         => isset( $email['zbsmail_target_objid'] ) ? (int) $email['zbsmail_target_objid'] : 0,
-			'status'             => isset( $email['zbsmail_status'] ) ? $email['zbsmail_status'] : '',
+			'status'             => $status,
 			'sender_email'       => isset( $email['zbsmail_sender_email'] ) ? $email['zbsmail_sender_email'] : '',
 			'receiver_email'     => isset( $email['zbsmail_receiver_email'] ) ? $email['zbsmail_receiver_email'] : '',
 			'subject'            => isset( $email['zbsmail_subject'] ) ? $email['zbsmail_subject'] : '',
 			'starred'            => isset( $email['zbsmail_starred'] ) ? (bool) $email['zbsmail_starred'] : false,
 			'opened'             => isset( $email['zbsmail_opened'] ) ? (bool) $email['zbsmail_opened'] : false,
-			'date_sent'          => isset( $email['zbsmail_sent'] ) ? (int) $email['zbsmail_sent'] : 0,
-			'date_created_gmt'   => Fields::uts_to_iso8601( isset( $email['zbsmail_created'] ) ? $email['zbsmail_created'] : 0 ),
+			'sent'               => $is_sent,
+			'date_sent'          => $is_sent ? Fields::uts_to_iso8601( $created ) : null,
+			'date_created_gmt'   => Fields::uts_to_iso8601( $created ),
 		);
 	}
 }
