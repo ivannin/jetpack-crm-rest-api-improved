@@ -34,7 +34,10 @@ class EntityRegistry {
 				'permission_resource' => 'contacts',
 				'operations'          => $full,
 				'compact_fields'      => array( 'id', 'first_name', 'last_name', 'email', 'status' ),
-				'required_on_create'  => array( 'email' ),
+				'required_on_create'  => array(),
+				'identity_fields'     => array( 'email', 'telephones.home', 'telephones.work', 'telephones.mobile' ),
+				'recommended_on_create' => array( 'email' ),
+				'notes'               => __( 'Email необязателен: контакт можно создать по имени и телефону (например, лид по звонку). Однако email используется ядром Jetpack CRM как ключ дедупликации — контакты с одинаковым email склеиваются. Если email неизвестен, оставьте его пустым, а не подставляйте синтетический адрес.', 'jetpack-crm-rest-api-improved' ),
 				'filters'             => self::filters( array( 'search', 'status', 'owner', 'company', 'tags', 'has_email' ) ),
 				'fields'              => self::fields(
 					array(
