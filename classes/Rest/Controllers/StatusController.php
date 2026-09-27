@@ -98,7 +98,41 @@ class StatusController extends BaseController {
 				'api_version' => 'v1',
 				'crm_version' => $crm_version,
 				'plugin'      => defined( 'JPCRM_IMPROVED_VERSION' ) ? JPCRM_IMPROVED_VERSION : null,
+				'diagnostics' => $this->diagnostics(),
 			)
+		);
+	}
+
+	/**
+	 * Environment diagnostics that help debug authentication issues.
+	 *
+	 * Application Passwords created through WP-CLI are not visible to web
+	 * requests while a persistent object cache is enabled: WP-CLI does not
+	 * invalidate the `_application_passwords` usermeta cache, so the REST layer
+	 * keeps reading a stale list and returns 401. The counters below make that
+	 * situation obvious without shell access.
+	 *
+	 * @return array
+	 */
+	private function diagnostics() {
+		$dropin = defined( 'WP_CONTENT_DIR' ) && file_exists( WP_CONTENT_DIR . '/object-cache.php' );
+
+		$available = function_exists( 'wp_is_application_passwords_available' ) && wp_is_application_passwords_available();
+
+		$count = 0;
+
+		if ( $available && class_exists( '\WP_Application_Passwords' ) ) {
+			$passwords = \WP_Application_Passwords::get_user_application_passwords( get_current_user_id() );
+			$count     = is_array( $passwords ) ? count( $passwords ) : 0;
+		}
+
+		return array(
+			'object_cache'                    => function_exists( 'wp_using_ext_object_cache' ) ? (bool) wp_using_ext_object_cache() : false,
+			'object_cache_dropin'             => (bool) $dropin,
+			'application_passwords_available' => (bool) $available,
+			'application_passwords_count'     => $count,
+			'environment_type'                => function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : null,
+			'php_version'                     => PHP_VERSION,
 		);
 	}
 

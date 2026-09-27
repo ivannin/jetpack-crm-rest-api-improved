@@ -186,6 +186,19 @@ Application Passwords require HTTPS. For local development over HTTP the plugin
 automatically enables them when WordPress runs with
 `WP_ENVIRONMENT_TYPE=local`.
 
+> **Create passwords in the WordPress admin, not via WP-CLI.** With a persistent
+> object cache enabled (for example W3TC + Redis), a password created with
+> `wp user application-password create` is invisible to web requests until the
+> `_application_passwords` usermeta cache is refreshed from a web context.
+> `wp cache flush` from CLI does not invalidate it, so the REST API answers
+> `401 jpcrm_rest_unauthorized`. A password created in **Profile → Application
+> Passwords** works immediately. Avoid `wp user application-password delete
+> <user> --all`, which permanently wipes working integrations.
+>
+> Use `GET /status` to diagnose: its `diagnostics` block reports
+> `object_cache`, `object_cache_dropin` and `application_passwords_count` for the
+> current user.
+
 ### Cookie authentication
 
 Requests made from a logged-in browser session must include a valid REST nonce in
@@ -301,12 +314,16 @@ native toolkit for the CRM.
 - **Transport:** Streamable HTTP (JSON-RPC 2.0, single requests and batches)
 - **Server name:** `jetpack-crm-mcp`
 - **Protocol versions:** `2025-03-26`, `2025-06-18` (default), `2026-07-28`
-- **Tools:** 21 built-in tools, including a generic CRUD facade
+- **Tools:** 21 built-in tools are registered, of which **20 are listed by
+  `tools/list` by default** — `crm_raw` only appears when
+  `jpcrm_improved_mcp_raw_enabled` is on, and write tools are hidden in
+  read-only mode. Includes a generic CRUD facade
   (`crm_search`, `crm_get`, `crm_create`, `crm_update`, `crm_delete`,
   `crm_batch`, `crm_raw`), discovery (`crm_entities`, `crm_me`, `crm_status`),
   email tools, sub-resource tools and action tools.
 - **Resources:** `jpcrm://entities`, `jpcrm://me`, `jpcrm://status`,
-  `jpcrm://openapi` and the template `jpcrm://{entity}/{id}`.
+  `jpcrm://openapi` via `resources/list`; the template `jpcrm://{entity}/{id}` is
+  advertised separately via `resources/templates/list`.
 - **Prompts:** `summarize_contact`, `contact_timeline`, `pipeline_review`,
   `draft_email`.
 
@@ -442,6 +459,28 @@ The living, machine-readable specification is always available at
 ---
 
 ## Changelog
+
+### 0.9.0
+
+- **Fixed:** the `logs` collection is no longer empty; listing supports
+  `object_type` + `object_id`, `type`, `search`, `pinned`, `owner`, sorting and
+  pagination ([#1](https://github.com/ivannin/jetpack-crm-rest-api-improved/issues/1)).
+- **Fixed:** `DELETE /logs/{id}` now deletes the record instead of returning a
+  false `404`
+  ([#6](https://github.com/ivannin/jetpack-crm-rest-api-improved/issues/6)).
+- **Fixed:** `X-WP-Total` / `X-WP-TotalPages` (and the MCP `crm_search` `total`)
+  now respect `search`, `status`, `owner` and other filters; 0 matches → `0`
+  ([#2](https://github.com/ivannin/jetpack-crm-rest-api-improved/issues/2)).
+- **Fixed:** emails no longer return `date_sent: -1`; the response exposes a
+  boolean `sent` and a real ISO-8601 `date_sent` (or `null`)
+  ([#3](https://github.com/ivannin/jetpack-crm-rest-api-improved/issues/3)).
+- **Fixed:** `crm_entities` reports `required_on_create: []` for contacts
+  (email is recommended, not required) and documents `identity_fields`
+  ([#5](https://github.com/ivannin/jetpack-crm-rest-api-improved/issues/5)).
+- **Docs:** clarified `resources/templates/list`, the conditional tool count,
+  the WP-CLI Application Password/object-cache pitfall, and added a
+  `diagnostics` block to `GET /status`
+  ([#4](https://github.com/ivannin/jetpack-crm-rest-api-improved/issues/4)).
 
 ### 0.8.0
 

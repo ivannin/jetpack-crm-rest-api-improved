@@ -1,6 +1,6 @@
 # Jetpack CRM MCP Server
 
-Version: **0.8.0** · Server name: **`jetpack-crm-mcp`** · Endpoint:
+Version: **0.9.0** · Server name: **`jetpack-crm-mcp`** · Endpoint:
 **`/wp-json/jpcrm-improved/v1/mcp`**
 
 The plugin embeds a **Model Context Protocol (MCP)** server so that AI agents
@@ -100,6 +100,21 @@ Create an Application Password in the WordPress user profile for the account the
 agent should act as. The plugin also enables Application Passwords automatically
 when `WP_ENVIRONMENT_TYPE=local`.
 
+> **Create the password in the admin UI, not with WP-CLI.** When a persistent
+> object cache is active (for example W3TC + Redis), a password created with
+> `wp user application-password create` is not visible to web requests: WP-CLI
+> does not invalidate the cached `_application_passwords` usermeta, so the REST
+> layer reads a stale list and answers `401 jpcrm_rest_unauthorized` /
+> `invalid application password`. `wp cache flush` from CLI does not help.
+> A password created in the web context (Profile → Application Passwords) works
+> immediately. Also beware that `wp user application-password delete <user> --all`
+> from CLI destroys existing integrations and the plaintext cannot be recovered.
+>
+> `GET /status` (and the `crm_status` tool) returns a `diagnostics` block with
+> `object_cache`, `object_cache_dropin` and `application_passwords_count`
+> (`application_passwords_count` counts the current user's passwords) so these
+> `401`s can be diagnosed without shell access.
+
 Authorization happens twice:
 
 1. **Endpoint level** — the caller must be logged in and have
@@ -134,7 +149,7 @@ otherwise the server responds with `2025-06-18`.
   },
   "serverInfo": {
     "name": "jetpack-crm-mcp",
-    "version": "0.8.0"
+    "version": "0.9.0"
   },
   "instructions": "..."
 }
@@ -225,6 +240,15 @@ The `text` content is the JSON encoding of the data (or the error message).
 The plugin registers **21 built-in tools**. Tool availability depends on the
 current user's capabilities and on the safety settings.
 
+> The number of tools returned by `tools/list` changes with the settings:
+> with default settings (`crm_raw` off, read-only off) **20 tools** are listed.
+> The count is **21** only when `jpcrm_improved_mcp_raw_enabled` is on.
+> In read-only mode the write tools (`crm_create`, `crm_update`, `crm_delete`,
+> `crm_batch`, `emails_send`, `email_threads_reply`, `email_threads_star`,
+> `email_threads_read`, `quotes_accept`, `segments_compile`) are hidden too, and
+> tools gated by a capability the user lacks are hidden as well. Always treat
+> `tools/list` as authoritative.
+
 For each tool below, "Gate" shows how availability is decided:
 **capability** = a specific CRM capability; **requires_any** = available if the
 user can perform that action on at least one entity.
@@ -238,7 +262,9 @@ Check API availability and versions.
 - **Arguments:** none.
 - **Gate:** capability `status:read`.
 - **Maps to:** `GET /status`.
-- **Returns:** availability status, CRM version, API version and plugin version.
+- **Returns:** availability status, CRM version, API version, plugin version and
+  an environment `diagnostics` block (object cache, Application Password count,
+  PHP version).
 
 #### `crm_me`
 
@@ -301,7 +327,8 @@ Search or list CRM objects. Defaults to a concise representation.
 - **Gate:** `requires_any: read`.
 - **Maps to:** `GET {entity.path}`.
 - **Returns:** `{ "total": <int>, "page": <int>, "per_page": <int>, "items": [ ... ] }`.
-  `total` comes from the `X-WP-Total` header.
+  `total` comes from the `X-WP-Total` header and reflects the applied `query`
+  and `filters` (0 matches → `total: 0`).
 - `filters` are only forwarded when the key is declared for that entity (see
   `crm_entities`).
 - `fields` selects top-level fields and overrides `response_format`.
@@ -681,7 +708,10 @@ Recompile a segment and get the number of matches.
 
 ## Resources
 
-Static resources are available via `resources/list` and `resources/read`:
+Static resources are available via `resources/list` and `resources/read`.
+`resources/list` returns **only** the `resources` array below; it does not include
+`resourceTemplates`. Templates are advertised through the separate
+`resources/templates/list` method (see below).
 
 | URI | Description | MIME type |
 |---|---|---|
@@ -776,7 +806,10 @@ Legend: R = list, G = get by ID, C = create, U = update, D = delete.
 | email-threads | contact, status, starred, search |
 | email-templates | search |
 
-**Required on create:** contacts → `email`; companies → `name`; quotes → `title`;
+**Required on create:** contacts → none (`email` is recommended and is the CRM
+de-duplication key; contacts without an email are allowed, so phone-only leads
+can be created without a synthetic address — see `identity_fields` in
+`crm_entities`); companies → `name`; quotes → `title`;
 tasks → `title`; forms → `title`; segments → `name`; quote-templates → `title`;
 task-reminders → `event`, `remind_at`; logs → `object_type`, `object_id`;
 line-items → `parent_object_type`, `parent_object_id`, `title`; tags → `name`;
@@ -785,6 +818,8 @@ emails → `subject`, `content`; email-templates → `subject`.
 > Some filters advertised here are interpreted by the MCP layer and forwarded to
 > the REST API; if the underlying controller does not implement a filter, it is
 > ignored. `crm_entities` is the authoritative catalog for the current deployment.
+> `logs` supports `object_type` + `object_id` together (object-id-only listing is
+> not possible), `type`, `pinned` and `owner`; its `total` reflects those filters.
 
 ---
 
@@ -994,6 +1029,8 @@ tools cover it automatically.
 | `isError: true` "read-only" | Read-only mode is enabled. | Disable read-only mode if writes are intended. |
 | `isError: true` asking for `confirm` | Confirmation mode is enabled. | Repeat the call with `confirm: true`. |
 | `crm_raw` unavailable | The raw option is disabled. | Enable `jpcrm_improved_mcp_raw_enabled`. |
+| `tools/list` returns 20, docs say 21 | `crm_raw` is disabled (default). | Expected; enable the raw option for 21, or rely on `tools/list`. |
+| `401` right after creating a password with WP-CLI | Persistent object cache caches `_application_passwords`. | Create the password in the admin UI; check `/status` diagnostics. |
 | Empty `202` response | The message had no `id` (treated as a notification). | Add an `id` to request a response. |
 
 For protocol-level details, see the [MCP specification](https://modelcontextprotocol.io).

@@ -1,6 +1,6 @@
 # Jetpack CRM REST API Improved — REST API Reference
 
-Version: **0.8.0** · Namespace: **`jpcrm-improved/v1`**
+Version: **0.9.0** · Namespace: **`jpcrm-improved/v1`**
 
 This document is the complete reference for the REST API implemented by the
 Jetpack CRM REST API Improved plugin. It covers authentication, request and
@@ -620,8 +620,15 @@ PATCH  /logs/{id}
 DELETE /logs/{id}
 ```
 
-**Collection parameters:** `object_type` (integer CRM type), `object_id`,
-`type` (string), `owner`.
+**Collection parameters:** `object_type` (integer CRM type; alias `objtype`),
+`object_id` (alias `objid`), `type` (string; alias `notetype`), `pinned`
+(boolean), `owner`, plus the standard `search`/`s`, `orderby`, `order`, `page`,
+`per_page` and `offset`. `X-WP-Total`/`X-WP-TotalPages` reflect all applied
+filters.
+
+> `object_id` is only applied together with `object_type`, because the CRM
+> activity table has no object-id-only lookup. Pass both to read one object's
+> activity, for example `/logs?object_type=1&object_id=1464`.
 
 **Fields:** `id`, `owner`, `object_type` (integer), `object_id` (integer),
 `type`, `short_description`, `long_description`, `pinned` (boolean),
@@ -790,7 +797,14 @@ DELETE /emails/{id}
 | `starred` | boolean | |
 | `opened` | boolean | Read-only |
 | `clicked` | boolean | Read-only |
+| `sent` | boolean | `true` when the message was sent |
+| `date_sent` | string | ISO-8601 send time; `null` when not sent |
 | `date_created_gmt` | string | ISO-8601 |
+
+> The underlying `zbsmail_sent` column is a flag (`-1` = logged, `1` = sent), not
+> a timestamp, so it is exposed as the boolean `sent`. `date_sent` is the real
+> history timestamp (the same value as `date_created_gmt`) for sent messages and
+> `null` otherwise.
 
 **Send an email:**
 
@@ -877,17 +891,32 @@ GET /status
 GET /me
 ```
 
-`GET /status` — availability and versions:
+`GET /status` — availability, versions and diagnostics:
 
 ```json
 {
   "status": "ok",
-  "message": "Jetpack CRM REST API is available.",
+  "message": "Jetpack CRM REST API Improved is available.",
   "crm_version": "6.8.4",
   "api_version": "v1",
-  "plugin": "0.8.0"
+  "plugin": "0.9.0",
+  "diagnostics": {
+    "object_cache": false,
+    "object_cache_dropin": false,
+    "application_passwords_available": true,
+    "application_passwords_count": 3,
+    "environment_type": "local",
+    "php_version": "8.3.27"
+  }
 }
 ```
+
+The `diagnostics` block exists to debug `401` authentication problems. When
+`object_cache` (or `object_cache_dropin`) is `true`, an Application Password
+created with `wp user application-password create` may not be recognised by web
+requests: WP-CLI does not invalidate the cached `_application_passwords`
+usermeta. Create the password in the WordPress admin, or flush the cache from a
+web context (`wp cache flush` from CLI is not enough).
 
 `GET /me` — the current user and effective CRM permissions:
 
