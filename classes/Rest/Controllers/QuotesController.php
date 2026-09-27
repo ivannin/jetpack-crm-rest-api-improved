@@ -18,6 +18,7 @@ class QuotesController extends ObjectController {
 	protected $method_save   = 'addUpdateQuote';
 	protected $method_delete = 'deleteQuote';
 	protected $method_count  = 'getQuoteCount';
+	protected $method_list_counts = true;
 
 	/**
 	 * Register standard routes plus the accept/unaccept actions.

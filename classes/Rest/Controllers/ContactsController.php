@@ -246,8 +246,9 @@ class ContactsController extends BaseController {
 			$items = array_slice( $items, $pagination['slice'] );
 		}
 
-		$count_args = $this->build_query_args( $request, array( 'page' => -1, 'per_page' => -1 ) );
-		$total      = (int) $dal->contacts->getContactCount( $count_args );
+		$count_args            = $this->build_query_args( $request, array( 'page' => -1, 'per_page' => -1 ) );
+		$count_args['count']   = true;
+		$total                 = (int) $dal->contacts->getContacts( $count_args );
 
 		return $this->collection_response( $items, $total, $pagination['per_page'] );
 	}

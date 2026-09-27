@@ -16,6 +16,7 @@ class FormsController extends ObjectController {
 	protected $method_save   = 'addUpdateForm';
 	protected $method_delete = 'deleteForm';
 	protected $method_count  = 'getFormCount';
+	protected $method_list_counts = true;
 
 	protected function format_item( array $item ) {
 		return array(

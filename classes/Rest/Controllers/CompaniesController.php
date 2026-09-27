@@ -27,6 +27,7 @@ class CompaniesController extends ObjectController {
 	protected $method_save   = 'addUpdateCompany';
 	protected $method_delete = 'deleteCompany';
 	protected $method_count  = 'getCompanyCount';
+	protected $method_list_counts = true;
 
 	protected function format_item( array $item ) {
 		return Fields::company_from_dal( $item );

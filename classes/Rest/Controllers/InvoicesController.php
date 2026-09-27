@@ -16,6 +16,7 @@ class InvoicesController extends ObjectController {
 	protected $method_save   = 'addUpdateInvoice';
 	protected $method_delete = 'deleteInvoice';
 	protected $method_count  = 'getInvoiceCount';
+	protected $method_list_counts = true;
 
 	protected function format_item( array $item ) { return Fields::invoice_from_dal( $item ); }
 	protected function to_dal( array $payload ) { return Fields::invoice_to_dal( $payload ); }

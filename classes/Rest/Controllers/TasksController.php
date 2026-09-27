@@ -16,6 +16,7 @@ class TasksController extends ObjectController {
 	protected $method_save   = 'addUpdateEvent';
 	protected $method_delete = 'deleteEvent';
 	protected $method_count  = 'getEventCount';
+	protected $method_list_counts = true;
 
 	protected function format_item( array $item ) { return Fields::task_from_dal( $item ); }
 	protected function to_dal( array $payload ) { return Fields::task_to_dal( $payload ); }

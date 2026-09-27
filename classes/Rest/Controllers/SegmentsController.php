@@ -98,7 +98,19 @@ class SegmentsController extends ObjectController {
 		if ( ! is_array( $segments ) ) { $segments = array(); }
 
 		$items = array_map( array( $this, 'format_item' ), $segments );
-		$total = (int) $layer->getSegmentCount();
+
+		$count_search = ( '' !== $search ) ? '%' . $search . '%' : '';
+
+		$total = (int) $layer->getSegmentsCountIncParams(
+			$owner_id,
+			-1,
+			-1,
+			true,
+			$count_search,
+			'',
+			'',
+			$sort
+		);
 		return $this->collection_response( $items, $total, $pagination['per_page'] );
 	}
 

@@ -16,6 +16,7 @@ class QuoteTemplatesController extends ObjectController {
 	protected $method_save   = 'addUpdateQuotetemplate';
 	protected $method_delete = 'deleteQuotetemplate';
 	protected $method_count  = 'getQuotetemplateCount';
+	protected $method_list_counts = true;
 
 	protected function format_item( array $item ) {
 		return array(

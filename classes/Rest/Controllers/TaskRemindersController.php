@@ -27,6 +27,7 @@ class TaskRemindersController extends ObjectController {
 	protected $method_save   = 'addUpdateEventreminder';
 	protected $method_delete = 'deleteEventreminder';
 	protected $method_count  = 'getEventReminderCount';
+	protected $method_list_counts = true;
 
 	/**
 	 * Register flat routes and the nested task routes.

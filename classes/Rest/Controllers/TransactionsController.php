@@ -16,6 +16,7 @@ class TransactionsController extends ObjectController {
 	protected $method_save   = 'addUpdateTransaction';
 	protected $method_delete = 'deleteTransaction';
 	protected $method_count  = 'getTransactionCount';
+	protected $method_list_counts = true;
 
 	protected function format_item( array $item ) { return Fields::transaction_from_dal( $item ); }
 	protected function to_dal( array $payload ) { return Fields::transaction_to_dal( $payload ); }

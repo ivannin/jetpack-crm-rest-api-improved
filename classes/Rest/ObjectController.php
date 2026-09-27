@@ -86,6 +86,18 @@ abstract class ObjectController extends BaseController {
 	protected $method_count = '';
 
 	/**
+	 * Whether the list method supports a `count` argument.
+	 *
+	 * When true, the filtered total is obtained by calling the list method with
+	 * `count => true`, which reuses exactly the same WHERE clause as the list
+	 * query. This is required for `X-WP-Total`/`X-WP-TotalPages` to respect
+	 * search and entity filters, which the narrow core count methods ignore.
+	 *
+	 * @var bool
+	 */
+	protected $method_list_counts = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param Plugin|null $plugin Plugin instance.
@@ -218,9 +230,35 @@ abstract class ObjectController extends BaseController {
 		}
 
 		$count_args = $this->build_list_args( $request, array( 'page' => -1, 'per_page' => -1 ) );
-		$total      = (int) $layer->{$this->method_count}( $count_args );
+		$total      = $this->count_items( $layer, $count_args );
 
 		return $this->collection_response( $formatted, $total, $pagination['per_page'] );
+	}
+
+	/**
+	 * Count items matching the current filters.
+	 *
+	 * Uses the list method with `count => true` when available so that the total
+	 * reflects search/status/owner filters; otherwise falls back to the core
+	 * count method.
+	 *
+	 * @param object $layer      DAL object layer.
+	 * @param array  $count_args Pre-built list args.
+	 * @return int
+	 */
+	protected function count_items( $layer, array $count_args ) {
+		if ( $this->method_list_counts && ! empty( $this->method_list ) ) {
+			$count_args['count'] = true;
+			$result              = $layer->{$this->method_list}( $count_args );
+
+			return is_numeric( $result ) ? (int) $result : 0;
+		}
+
+		if ( ! empty( $this->method_count ) ) {
+			return (int) $layer->{$this->method_count}( $count_args );
+		}
+
+		return 0;
 	}
 
 	/**
