@@ -128,6 +128,37 @@ class LogsController extends ObjectController {
 		return rest_ensure_response( $this->format_item( $item ) );
 	}
 
+	/**
+	 * Delete a log.
+	 *
+	 * Overridden because the shared `ObjectController::delete_item()` calls the
+	 * single-item getter with a scalar id, while `getLog()` expects an arguments
+	 * array. That made every deletion return a false 404.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function delete_item( $request ) {
+		$layer = $this->get_layer();
+		if ( ! $layer ) { return $this->dal_error(); }
+
+		$id   = (int) $request->get_param( 'id' );
+		$item = $layer->{$this->method_get}( array( 'id' => $id, 'incMeta' => true ) );
+		if ( ! $item ) { return $this->error_not_found(); }
+
+		$result = $layer->{$this->method_delete}( array( 'id' => $id ) );
+		if ( false === $result ) {
+			return $this->error( 'jpcrm_rest_unknown_error', __( 'Failed to delete log.', 'jetpack-crm-rest-api-improved' ), 500 );
+		}
+
+		return rest_ensure_response(
+			array(
+				'deleted'  => true,
+				'previous' => $this->format_item( $item ),
+			)
+		);
+	}
+
 	protected function single_args() {
 		return array( 'incMeta' => true, 'ignoreowner' => zeroBSCRM_DAL2_ignoreOwnership( $this->obj_type ) );
 	}
